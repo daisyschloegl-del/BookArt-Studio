@@ -16,4 +16,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         reader.readAsDataURL(file);
     });
+    const generateBtn = document.getElementById("generateBtn");
+
+generateBtn.addEventListener("click", () => {
+    if (!preview.src) {
+        alert("Bitte zuerst ein Bild auswählen.");
+        return;
+    }
+
+    alert("Vorlage wird erstellt...");
+});
 });
