@@ -1,1 +1,3 @@
-// Generator für Buchfaltvorlagen
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("BookArt Studio gestartet!");
+});
