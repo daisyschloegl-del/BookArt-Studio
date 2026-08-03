@@ -37,8 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
             text += `${r.page} | ${r.start} | ${r.end}\n`;
         });
 
-        const win = window.open("", "_blank");
-        win.document.write("<pre>" + text + "</pre>");
+        alert("Button funktioniert!");
     });
 
 });
