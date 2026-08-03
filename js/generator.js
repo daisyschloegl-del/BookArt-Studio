@@ -82,12 +82,19 @@ img.onload = () => {
 
     }
 
-    console.log(result);
+   let text = "Seite | Start | Ende\n";
+text += "----------------------\n";
 
-    alert(
-        result.length +
-        " Seiten erkannt.\nSiehe Browser-Konsole."
-    );
+result.forEach(r => {
+    text += `${r.page} | ${r.start} | ${r.end}\n`;
+});
+
+const win = window.open("", "_blank");
+win.document.write(`
+<pre style="font-size:14px">
+${text}
+</pre>
+`); 
 
 };
 
