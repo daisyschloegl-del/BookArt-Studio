@@ -56,9 +56,9 @@ img.onload = () => {
             const i = (y * canvas.width + x) * 4;
 
             const gray =
-                (pixels[i] +
-                 pixels[i + 1] +
-                 pixels[i + 2]) / 3;
+    0.299 * pixels[i] +
+    0.587 * pixels[i + 1] +
+    0.114 * pixels[i + 2];
 
             if (gray < 128) {
 
