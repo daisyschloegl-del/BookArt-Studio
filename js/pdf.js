@@ -1,4 +1,3 @@
-
 export function exportPDF(text) {
   console.log("PDF-Export:");
   console.log(text);
