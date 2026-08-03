@@ -1,103 +1,65 @@
 
-document.addEventListener("DOMContentLoaded", () => {
-    const input = document.getElementById("imageInput");
-    const preview = document.getElementById("preview");
-
-    input.addEventListener("change", (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = "block";
-        };
-
-        reader.readAsDataURL(file);
-    });
-    const generateBtn = document.getElementById("generateBtn");
-
-generateBtn.addEventListener("click", () => {
-    if (!preview.src) {
-        alert("Bitte zuerst ein Bild auswählen.");
-        return;
-    }
+export function generatePattern(img, pages = 365) {
 
     const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
 
-const img = new Image();
-
-img.onload = () => {
-
-    canvas.width = img.width;
-    canvas.height = img.height;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
 
     ctx.drawImage(img, 0, 0);
 
-    const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-    let pixels = image.data;
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 
     let result = [];
 
-    const pages = 400;
-
     for (let page = 0; page < pages; page++) {
 
-        const x = Math.floor(page * canvas.width / pages);
+        const y = Math.floor(page * canvas.height / pages);
 
-        let top = null;
-        let bottom = null;
+        let start = -1;
+        let end = -1;
 
-        for (let y = 0; y < canvas.height; y++) {
+        // erster schwarzer Pixel
+        for (let x = 0; x < canvas.width; x++) {
 
             const i = (y * canvas.width + x) * 4;
 
             const gray =
-    0.299 * pixels[i] +
-    0.587 * pixels[i + 1] +
-    0.114 * pixels[i + 2];
+                (pixels[i] +
+                 pixels[i + 1] +
+                 pixels[i + 2]) / 3;
 
             if (gray < 128) {
-
-                if (top === null) top = y;
-
-                bottom = y;
-
+                start = x;
+                break;
             }
-
         }
 
-        if (top !== null) {
+        // letzter schwarzer Pixel
+        for (let x = canvas.width - 1; x >= 0; x--) {
 
+            const i = (y * canvas.width + x) * 4;
+
+            const gray =
+                (pixels[i] +
+                 pixels[i + 1] +
+                 pixels[i + 2]) / 3;
+
+            if (gray < 128) {
+                end = x;
+                break;
+            }
+        }
+
+        if (start >= 0 && end >= 0) {
             result.push({
                 page: page + 1,
-                start: top,
-                end: bottom
+                start,
+                end
             });
-
         }
-
     }
 
-   let text = "Seite | Start | Ende\n";
-text += "----------------------\n";
-
-result.forEach(r => {
-    text += `${r.page} | ${r.start} | ${r.end}\n`;
-});
-
-const win = window.open("", "_blank");
-win.document.write(`
-<pre style="font-size:14px">
-${text}
-</pre>
-`); 
-
-};
-
-img.src = preview.src;
-});
-});
+    return result;
+}
