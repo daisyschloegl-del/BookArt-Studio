@@ -19,9 +19,11 @@
 
     ctx.fillText(textInput, canvas.width / 2, canvas.height / 2);
 
-    const img = new Image();
-    img.src = canvas.toDataURL();
+   
 
-    return generatePattern(img, 365);
-} 
-// test
+const img = new Image();
+img.onload = () => {
+    generatePattern(img, 365);
+};
+img.src = canvas.toDataURL();
+return [];
