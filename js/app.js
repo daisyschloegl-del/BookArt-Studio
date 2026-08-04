@@ -1,6 +1,6 @@
 
 import { generatePattern } from "./generator.js";
-
+import { exportPDF } from "./pdf.js";
 document.addEventListener("DOMContentLoaded", () => {
 
     const input = document.getElementById("imageInput");
