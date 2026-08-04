@@ -15,7 +15,23 @@
     <p>Generator für Buchfalt- und Schneidvorlagen</p>
 
     <input type="file" id="imageInput" accept="image/*">
-    
+    <<h3>Textvorlage</h3>
+
+<label>Text</label>
+<input type="text" id="textInput" placeholder="lebe">
+
+<label>Schriftart</label>
+<select id="fontSelect">
+    <option value="script">Handschrift</option>
+    <option value="serif">Serif</option>
+    <option value="sans">Sans</option>
+</select>
+
+<label>Technik</label>
+<select id="patternType">
+    <option value="fold">Nur Falten</option>
+    <option value="cutfold">Schneiden & Falten</option>
+</select>
 <button id="generateBtn">Vorlage erstellen</button>
 <img id="preview" style="max-width:100%; margin-top:20px; display:none;">
 
