@@ -1,13 +1,11 @@
+
 export function exportPDF(text) {
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const { jsPDF } = window.jspdf;
 
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "buchfalten-vorlage.txt";
+    const pdf = new jsPDF();
 
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    const lines = pdf.splitTextToSize(text, 180);
+    pdf.text(lines, 10, 10);
 
-  URL.revokeObjectURL(link.href);
+    pdf.save("buchfalten-vorlage.pdf");
 }
