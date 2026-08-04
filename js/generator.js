@@ -26,7 +26,8 @@ export function generatePattern(img, pages = 365) {
                  pixels[i + 1] +
                  pixels[i + 2]) / 3;
 
-            if (gray < 128) {
+            // Heller Hintergrund wird ignoriert
+if (gray < 200) {
 
                 if (left === null) left = x;
 
