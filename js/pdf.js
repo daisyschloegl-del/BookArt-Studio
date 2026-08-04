@@ -1,11 +1,28 @@
+export function exportPDF(pattern) {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
 
-export function exportPDF(text) {
-    const { jsPDF } = window.jspdf;
+  pdf.setFont("courier", "normal");
+  pdf.setFontSize(10);
 
-    const pdf = new jsPDF();
+  pdf.text("Buchfaltvorlage", 10, 10);
 
-    const lines = pdf.splitTextToSize(text, 180);
-    pdf.text(lines, 10, 10);
+  let y = 20;
 
-    pdf.save("buchfalten-vorlage.pdf");
+  pattern.forEach(entry => {
+    pdf.text(
+      `${entry.page}\t${entry.start}\t${entry.end}`,
+      10,
+      y
+    );
+
+    y += 6;
+
+    if (y > 280) {
+      pdf.addPage();
+      y = 20;
+    }
+  });
+
+  pdf.save("buchfalt-vorlage.pdf");
 }
