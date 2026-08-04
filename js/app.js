@@ -1,13 +1,21 @@
+import { generatePattern } from "./generator.js";
+import { exportPDF } from "./pdf.js";
 
-   function generateTextPattern() {
-    const textInput = document.getElementById("textInput").value;
+function generateTextPattern() {
+
+    const text = document.getElementById("textInput").value.trim();
     const font = document.getElementById("fontSelect").value;
+
+    if (!text) {
+        alert("Bitte einen Text eingeben.");
+        return;
+    }
 
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
-    canvas.width = 400;
-    canvas.height = 200;
+    canvas.width = 1200;
+    canvas.height = 350;
 
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -15,15 +23,34 @@
     ctx.fillStyle = "black";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `80px ${font}`;
 
-    ctx.fillText(textInput, canvas.width / 2, canvas.height / 2);
+    switch (font) {
+        case "script":
+            ctx.font = "140px cursive";
+            break;
 
-   
+        case "serif":
+            ctx.font = "140px serif";
+            break;
 
-const img = new Image();
-img.onload = () => {
-    generatePattern(img, 365);
-};
-img.src = canvas.toDataURL();
-return [];
+        default:
+            ctx.font = "140px sans-serif";
+    }
+
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    const img = new Image();
+
+    img.onload = () => {
+
+        const pattern = generatePattern(img, 365);
+
+        exportPDF(pattern);
+
+    };
+
+    img.src = canvas.toDataURL();
+
+}
+
+document.getElementById("generateBtn").addEventListener("click", generateTextPattern);
