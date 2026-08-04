@@ -1,14 +1,18 @@
 export function generatePattern(img, pages = 365) {
 
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d");
 
-    canvas.width = 400;
-    canvas.height = pages;
+const scale = 400 / img.width;
 
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+canvas.width = 400;
+canvas.height = Math.round(img.height * scale);
 
-    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+const pages = canvas.height;
 
     let result = [];
 
