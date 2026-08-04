@@ -12,7 +12,7 @@ function generateTextPattern() {
     }
 
     const canvas = document.createElement("canvas");
-    const ctx = 
+const ctx = canvas.getContext("2d");
     
 canvas.width = 1200;
 canvas.height = 800;
