@@ -37,13 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
             text += `${r.page} | ${r.start} | ${r.end}\n`;
         });
 
-        const win = window.open("", "_blank");
-
-if (win) {
-    win.document.write("<pre>" + text + "</pre>");
-} else {
-    alert(text);
-}
+        exportPDF(text);
     });
 
 });
