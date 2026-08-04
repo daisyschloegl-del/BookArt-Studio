@@ -50,6 +50,25 @@ if (gray < 200) {
 
     }
 
-    return result;
+    // Leere Seiten am Anfang entfernen
+while (result.length && result[0].start === 0 && result[0].end === 90) {
+    result.shift();
+}
+
+// Leere Seiten am Ende entfernen
+while (result.length &&
+       result[result.length - 1].start === 0 &&
+       result[result.length - 1].end === 90) {
+    result.pop();
+}
+
+// Seiten neu nummerieren
+result = result.map((row, index) => ({
+    page: index + 1,
+    start: row.start,
+    end: row.end
+}));
+
+return result;
 
 }
