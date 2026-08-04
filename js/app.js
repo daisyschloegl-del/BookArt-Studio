@@ -23,12 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     button.addEventListener("click", () => {
 
-        if (!preview.complete || !preview.naturalWidth) {
-            alert("Bitte zuerst ein Bild auswählen.");
-            return;
-        }
+        
 
-        const result = generatePattern(preview, 365);
+        let result;
+
+if (preview.complete && preview.naturalWidth) {
+    result = generatePattern(preview, 365);
+} else {
+    result = generateTextPattern();
+}
 
         let text = "Seite | Start | Ende\n";
         text += "--------------------\n";
@@ -41,3 +44,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 });
+function generateTextPattern() {
+    return [
+        { page: 1, start: 40, end: 120 },
+        { page: 2, start: 38, end: 122 },
+        { page: 3, start: 36, end: 124 },
+        { page: 4, start: 34, end: 126 },
+        { page: 5, start: 32, end: 128 },
+        { page: 6, start: 30, end: 130 },
+        { page: 7, start: 28, end: 132 },
+        { page: 8, start: 26, end: 134 },
+        { page: 9, start: 24, end: 136 },
+        { page: 10, start: 22, end: 138 }
+    ];
+}
