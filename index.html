@@ -1,44 +1,245 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookArt Studio</title>
-
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BookArt Studio 2.0</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root { --bg:#f7f1e8; --card:#fff; --ink:#2f2a24; --accent:#8a5a44; --line:#e3d6c8; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+    main { max-width:760px; margin:auto; padding:18px; }
+    h1 { text-align:center; margin:8px 0 2px; }
+    .sub { text-align:center; margin:0 0 18px; color:#6f6258; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 4px 18px rgba(60,40,20,.06); }
+    label { display:block; font-weight:650; margin:13px 0 6px; }
+    input, select, button { width:100%; min-height:46px; border-radius:10px; border:1px solid #cdbdab; padding:10px 12px; font-size:16px; background:white; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    button { margin-top:16px; background:var(--accent); color:white; border:0; font-weight:750; cursor:pointer; }
+    button:disabled { opacity:.6; }
+    canvas { width:100%; margin-top:16px; border:1px solid var(--line); border-radius:10px; background:white; }
+    .note { font-size:14px; color:#6f6258; line-height:1.45; margin-top:12px; }
+    .status { min-height:24px; margin-top:12px; font-weight:650; }
+    @media (max-width:560px){ .grid{grid-template-columns:1fr;} }
+  </style>
 </head>
+<body>
+<main>
+  <h1>BookArt Studio 2.0</h1>
+  <p class="sub">Textvorlage für Buchfaltung</p>
 
+  <section class="card">
+    <label for="textInput">Text</label>
+    <input id="textInput" value="lebe liebe lache" autocomplete="off">
 
+    <div class="grid">
+      <div>
+        <label for="fontSelect">Schriftart</label>
+        <select id="fontSelect">
+          <option value="cursive">Handschrift</option>
+          <option value="serif">Serif</option>
+          <option value="sans-serif">Sans</option>
+        </select>
+      </div>
+      <div>
+        <label for="pagesInput">Buchseiten</label>
+        <input id="pagesInput" type="number" min="40" max="1000" value="368">
+      </div>
+    </div>
 
-    <h1>📚 BookArt Studio</h1>
-    <p>Generator für Buchfalt- und Schneidvorlagen</p>
+    <div class="grid">
+      <div>
+        <label for="firstPageInput">Erste gedruckte Seite</label>
+        <input id="firstPageInput" type="number" min="1" value="7">
+      </div>
+      <div>
+        <label for="heightInput">Buchhöhe in mm</label>
+        <input id="heightInput" type="number" min="80" max="400" step="0.1" value="190">
+      </div>
+    </div>
 
-    <input type="file" id="imageInput" accept="image/*">
-    <h3>Textvorlage</h3>
+    <label for="techniqueSelect">Technik</label>
+    <select id="techniqueSelect">
+      <option value="fold">Nur Falten</option>
+      <option value="cutfold">Schneiden &amp; Falten</option>
+    </select>
 
-<label>Text</label>
-<input type="text" id="textInput" placeholder="lebe">
+    <button id="generateBtn">PDF-Vorlage erstellen</button>
+    <div id="status" class="status"></div>
+    <canvas id="preview" width="1200" height="500"></canvas>
 
-<label>Schriftart</label>
-<select id="fontSelect">
-    <option value="script">Handschrift</option>
-    <option value="serif">Serif</option>
-    <option value="sans">Sans</option>
-</select>
+    <p class="note">
+      Hinweis: Diese Version erzeugt eine einfache Markierliste aus der Textsilhouette.
+      Vor dem Bearbeiten eines wertvollen Buches bitte mit einem Testbuch prüfen.
+    </p>
+  </section>
+</main>
 
-<label>Technik</label>
-<select id="patternType">
-    <option value="fold">Nur Falten</option>
-    <option value="cutfold">Schneiden & Falten</option>
-</select>
-<button id="generateBtn">Vorlage erstellen</button>
-<img id="preview" style="max-width:100%; margin-top:20px; display:none;">
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const preview = $("preview");
+  const pctx = preview.getContext("2d");
 
+  function drawTextCanvas(text, fontFamily) {
+    const c = document.createElement("canvas");
+    c.width = 1600;
+    c.height = 700;
+    const ctx = c.getContext("2d");
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    let size = 260;
+    do {
+      ctx.font = `700 ${size}px ${fontFamily}`;
+      if (ctx.measureText(text).width <= c.width - 100) break;
+      size -= 8;
+    } while (size > 60);
+
+    ctx.fillText(text, c.width / 2, c.height / 2);
+    return c;
+  }
+
+  function makePattern(source, leafCount, bookHeightMm, firstPrintedPage) {
+    const c = document.createElement("canvas");
+    c.width = 1000;
+    c.height = leafCount;
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0,0,c.width,c.height);
+    ctx.drawImage(source, 0, 0, c.width, c.height);
+
+    const data = ctx.getImageData(0,0,c.width,c.height).data;
+    const result = [];
+
+    for (let y = 0; y < leafCount; y++) {
+      let left = -1, right = -1;
+      for (let x = 0; x < c.width; x++) {
+        const i = (y * c.width + x) * 4;
+        const brightness = (data[i] + data[i+1] + data[i+2]) / 3;
+        if (brightness < 180) {
+          if (left < 0) left = x;
+          right = x;
+        }
+      }
+
+      const printedPage = firstPrintedPage + y * 2;
+      if (left < 0) {
+        result.push({ leaf:y+1, page:printedPage, start:null, end:null });
+      } else {
+        const start = (left / (c.width - 1)) * bookHeightMm;
+        const end = (right / (c.width - 1)) * bookHeightMm;
+        result.push({
+          leaf:y+1,
+          page:printedPage,
+          start:Math.round(start * 10) / 10,
+          end:Math.round(end * 10) / 10
+        });
+      }
+    }
+    return result;
+  }
+
+  function renderPreview(source) {
+    pctx.fillStyle = "#fff";
+    pctx.fillRect(0,0,preview.width,preview.height);
+    const scale = Math.min(preview.width/source.width, preview.height/source.height);
+    const w = source.width * scale;
+    const h = source.height * scale;
+    pctx.drawImage(source, (preview.width-w)/2, (preview.height-h)/2, w, h);
+  }
+
+  function exportPdf(pattern, meta) {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit:"mm", format:"a4" });
+
+    const margin = 14;
+    let y = 16;
+    const lineH = 5.2;
+
+    function header() {
+      pdf.setFont("helvetica","bold");
+      pdf.setFontSize(14);
+      pdf.text("BookArt Studio – Faltvorlage", margin, y);
+      y += 7;
+      pdf.setFont("helvetica","normal");
+      pdf.setFontSize(9);
+      pdf.text(`Text: ${meta.text}`, margin, y); y += 5;
+      pdf.text(`Seiten: ${meta.pages} | Blätter/Faltungen: ${meta.leaves} | Buchhöhe: ${meta.height} mm`, margin, y); y += 5;
+      pdf.text(`Technik: ${meta.technique} | Erste gedruckte Seite: ${meta.firstPage}`, margin, y); y += 7;
+      pdf.setFont("courier","bold");
+      pdf.text("Blatt   Seite   Start mm   Ende mm", margin, y);
+      y += 4;
+      pdf.line(margin, y, 196, y);
+      y += 4;
+      pdf.setFont("courier","normal");
+    }
+
+    header();
+
+    for (const row of pattern) {
+      if (y > 284) {
+        pdf.addPage();
+        y = 16;
+        header();
+      }
+      const start = row.start == null ? "-" : row.start.toFixed(1);
+      const end = row.end == null ? "-" : row.end.toFixed(1);
+      const line =
+        String(row.leaf).padStart(4) + "    " +
+        String(row.page).padStart(4) + "    " +
+        String(start).padStart(8) + "   " +
+        String(end).padStart(7);
+      pdf.text(line, margin, y);
+      y += lineH;
+    }
+
+    pdf.save("bookart-vorlage.pdf");
+  }
+
+  $("generateBtn").addEventListener("click", () => {
+    const text = $("textInput").value.trim();
+    const pages = Number($("pagesInput").value);
+    const firstPage = Number($("firstPageInput").value);
+    const height = Number($("heightInput").value);
+    const font = $("fontSelect").value;
+    const technique = $("techniqueSelect").value;
+
+    if (!text) return alert("Bitte Text eingeben.");
+    if (!Number.isFinite(pages) || pages < 40) return alert("Bitte gültige Seitenzahl eingeben.");
+    if (!Number.isFinite(height) || height <= 0) return alert("Bitte gültige Buchhöhe eingeben.");
+
+    const leaves = Math.floor(pages / 2);
+    $("status").textContent = "Vorlage wird erstellt …";
+
+    try {
+      const source = drawTextCanvas(text, font);
+      renderPreview(source);
+      const pattern = makePattern(source, leaves, height, firstPage);
+      exportPdf(pattern, {
+        text,
+        pages,
+        leaves,
+        height,
+        firstPage,
+        technique: technique === "cutfold" ? "Schneiden & Falten" : "Nur Falten"
+      });
+      $("status").textContent = "PDF wurde erstellt.";
+    } catch (err) {
+      console.error(err);
+      $("status").textContent = "Fehler beim Erstellen.";
+      alert("Die Vorlage konnte nicht erstellt werden.");
+    }
+  });
+
+  renderPreview(drawTextCanvas($("textInput").value, $("fontSelect").value));
+})();
 </script>
-<script type="module" src="js/app.js"></script>
 </body>
 </html>
+
