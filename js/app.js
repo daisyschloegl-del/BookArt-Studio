@@ -12,11 +12,10 @@ function generateTextPattern() {
     }
 
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = 1200;
-    canvas.height = 350;
-
+    const ctx = 
+    
+canvas.width = 1200;
+canvas.height = 800;
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -26,15 +25,15 @@ function generateTextPattern() {
 
     switch (font) {
         case "script":
-            ctx.font = "140px cursive";
+            ctx.font = "300px cursive";
             break;
 
         case "serif":
-            ctx.font = "140px serif";
+            ctx.font = "300px serif";
             break;
 
         default:
-            ctx.font = "140px sans-serif";
+            ctx.font = "300px sans-serif";
     }
 
     ctx.fillText(text, canvas.width / 2, canvas.height / 2);
