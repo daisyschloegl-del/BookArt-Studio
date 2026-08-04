@@ -1,21 +1,28 @@
+
 import { generatePattern } from "./generator.js";
 import { exportPDF } from "./pdf.js";
 
 function generateTextPattern() {
+    const inputText = document
+        .getElementById("textInput")
+        .value
+        .trim();
 
-    const text = document.getElementById("textInput").value.trim();
-    const font = document.getElementById("fontSelect").value;
+    const font = document
+        .getElementById("fontSelect")
+        .value;
 
-    if (!text) {
+    if (!inputText) {
         alert("Bitte einen Text eingeben.");
         return;
     }
 
     const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
-    
-canvas.width = 1200;
-canvas.height = 800;
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = 1200;
+    canvas.height = 800;
+
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -36,28 +43,38 @@ canvas.height = 800;
             ctx.font = "300px sans-serif";
     }
 
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    ctx.fillText(
+        inputText,
+        canvas.width / 2,
+        canvas.height / 2
+    );
 
     const img = new Image();
 
     img.onload = () => {
-
         const pattern = generatePattern(img, 365);
 
-let text = "Seite | Start | Ende\n";
-text += "---------------------\n";
+        let pdfText = "Seite | Start | Ende\n";
+        pdfText += "---------------------\n";
 
-pattern.forEach(row => {
-  text += `${row.page} | ${row.start} | ${row.end}\n`;
-});
+        pattern.forEach((row) => {
+            pdfText += `${row.page} | ${row.start} | ${row.end}\n`;
+        });
 
-exportPDF(text);
-
-
+        exportPDF(pdfText);
     };
 
-    img.src = canvas.toDataURL();
+    img.onerror = () => {
+        alert("Das Textbild konnte nicht verarbeitet werden.");
+    };
 
+    img.src = canvas.toDataURL("image/png");
 }
 
-document.getElementById("generateBtn").addEventListener("click", generateTextPattern);
+const button = document.getElementById("generateBtn");
+
+if (button) {
+    button.addEventListener("click", generateTextPattern);
+} else {
+    console.error("generateBtn wurde nicht gefunden.");
+}
