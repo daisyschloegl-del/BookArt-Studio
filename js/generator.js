@@ -1,22 +1,23 @@
-export function generatePattern(img, pages = 365) {
+
+export function generatePattern(img, maxPages = 365) {
 
     const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
 
-const scale = 400 / img.width;
+    const scale = 400 / img.width;
 
-canvas.width = 400;
-canvas.height = Math.round(img.height * scale);
+    canvas.width = 400;
+    canvas.height = Math.round(img.height * scale);
 
-ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
 
-const pages = canvas.height;
+    const totalPages = Math.min(canvas.height, maxPages);
 
-    let result = [];
+    const result = [];
 
-    for (let y = 0; y < pages; y++) {
+    for (let y = 0; y < totalPages; y++) {
 
         let left = null;
         let right = null;
@@ -25,13 +26,13 @@ const pages = canvas.height;
 
             const i = (y * canvas.width + x) * 4;
 
-            const gray =
-                (pixels[i] +
-                 pixels[i + 1] +
-                 pixels[i + 2]) / 3;
+            const r = pixels[i];
+            const g = pixels[i + 1];
+            const b = pixels[i + 2];
 
-            // Heller Hintergrund wird ignoriert
-if (gray < 200) {
+            const brightness = (r + g + b) / 3;
+
+            if (brightness < 128) {
 
                 if (left === null) left = x;
 
@@ -41,38 +42,22 @@ if (gray < 200) {
 
         if (left !== null) {
 
-            const start = Math.round(left * 90 / canvas.width);
-            const end = Math.round(right * 90 / canvas.width);
+            result.push({
+                page: y + 1,
+                start: left,
+                end: right
+            });
+
+        } else {
 
             result.push({
                 page: y + 1,
-                start,
-                end
+                start: "-",
+                end: "-"
             });
 
         }
-
     }
 
-    // Leere Seiten am Anfang entfernen
-while (result.length && result[0].start === 0 && result[0].end === 90) {
-    result.shift();
-}
-
-// Leere Seiten am Ende entfernen
-while (result.length &&
-       result[result.length - 1].start === 0 &&
-       result[result.length - 1].end === 90) {
-    result.pop();
-}
-
-// Seiten neu nummerieren
-result = result.map((row, index) => ({
-    page: index + 1,
-    start: row.start,
-    end: row.end
-}));
-
-return result;
-
+    return result;
 }
