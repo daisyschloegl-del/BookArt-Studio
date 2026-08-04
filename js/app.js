@@ -24,3 +24,4 @@
 
     return generatePattern(img, 365);
 } 
+// test
