@@ -45,7 +45,15 @@ function generateTextPattern() {
 
         const pattern = generatePattern(img, 365);
 
-        exportPDF(pattern);
+let text = "Seite | Start | Ende\n";
+text += "---------------------\n";
+
+pattern.forEach(row => {
+  text += `${row.page} | ${row.start} | ${row.end}\n`;
+});
+
+exportPDF(text);
+
 
     };
 
